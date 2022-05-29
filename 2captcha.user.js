@@ -105,6 +105,6 @@
         if(GM_getValue("SolveCaptcha", !1)){
             submit()
         }
-    },false);
+    },false,500,100);
 
 })();
