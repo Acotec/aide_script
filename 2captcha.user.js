@@ -32,18 +32,22 @@
             data: new URLSearchParams({key,method,captcha_id,pageurl,header_acao}).toString(),
             onload: r => {
                 let result = r.responseText
-                console.log(result,r.response);
+                console.log(result);
                 if(/ERROR_WRONG_USER_KEY|ERROR_KEY_DOES_NOT_EXIST|ERROR_ZERO_BALANCE/ig.test(result)){
                     try{document.querySelector(gtipS).innerText=result}catch(e){alert(result)}
+                    return
                 }
                 if(/ERROR_NO_SLOT_AVAILABLE/ig.test(result)){
-                    try{document.querySelector(gtipS).innerText=result+" Retrying after 5sec"}catch(e){alert(result)}
-                    setTimeout(submit,5000)
+                    try{document.querySelector(gtipS).innerText=result+" Retrying after 10sec or (Click to solve) Button"}catch(e){alert(result)}
+                    setTimeout(submit,1000)
+                    return
                 }
                 else{
-                    GM_setValue("id",parseInt(result.replace(/ok\|/ig,'')))}
+                    GM_setValue("id",parseInt(result.replace(/ok\|/ig,'')))
+                    timer(10)
+                }
             },
-            onerror:r =>{console.log(r.response)}
+            onerror:r =>{console.log(r.response);document.querySelector(gtipS).innerText='Something is Wrong';}
         });
     }
 
@@ -70,10 +74,11 @@
                     document.getElementById("captcha_output").value = result.captcha_output;
                     document.getElementById("pass_token").value = result.pass_token;
                     document.getElementById("gen_time").value = result.gen_time;
-                    document.querySelector(gtipS).innerText='DONE SOLVING CAPTCHA'
+                    document.querySelector(gtipS).innerText='DONE SOLVING CAPTCHA';
+                    return
                 }
-
-            }
+            },
+            onerror:r =>{console.log(r.response);document.querySelector(gtipS).innerText='Something is Wrong';}
         });}
     var timer = (x,callback) => {
         if (x < 0) {
@@ -87,11 +92,19 @@
             timer(--x)
         }, 1000)
     }
-    waitForKeyElements("[href*=geetest]", (element) => {
+    waitForKeyElements("[class*=geetest_btn_click]", (element) => {
+        let gbt=document.querySelector('.geetest_holder')
+        let bt = document.createElement("button")
+        bt.setAttribute('class', 'title')
+        bt.innerText ="Click to solve"
+        gbt.parentNode.insertBefore(bt, gbt.nextSibling);
+        bt.addEventListener("click", function(e) {
+            e.preventDefault();
+            submit()
+        })
         if(GM_getValue("SolveCaptcha", !1)){
             submit()
-            timer(10)
         }
-    });
+    },false);
 
 })();
