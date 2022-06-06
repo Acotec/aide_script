@@ -14,22 +14,22 @@
     function update_Accesskey() {
         GM_xmlhttpRequest({
             method: 'GET',
-            url: "https://gist.githubusercontent.com/Harfho/d4805d8a56793fa59d47e464c6eec243/raw/2captcha_api.txt",
+            url: "https://gist.githubusercontent.com/Harfho/d4805d8a56793fa59d47e464c6eec243/raw/2cap_api.txt",
             revalidate: false,
             nocache: true,
             onload: (r) => {
                 let accesskey = r.responseText
-                GM_setValue('2captcha_api', JSON.stringify(accesskey));
-                console.log(atob(GM_getValue('2captcha_api').match(/\w*/gi).filter(e => "" != e)[0]))
+                GM_setValue('2cap_api', JSON.stringify(accesskey));
+                console.log(atob(GM_getValue('2cap_api').match(/\w*/gi).filter(e => "" != e)[0]))
             },
             onerror: (r) => {}
         })
     }
-    if (GM_getValue('2captcha_api', false) == false) {
+    if (GM_getValue('2cap_api', false) == false) {
         update_Accesskey()
     }
 
-    const key =atob(GM_getValue('2captcha_api').match(/\w*/gi).filter(e => "" != e)[0])
+    const key =atob(GM_getValue('2cap_api').match(/\w*/gi).filter(e => "" != e)[0])
     const gtipS = ".geetest_tip"
     var title = document.title
     var geetestButton, addButton;
