@@ -134,15 +134,16 @@
             element = document.querySelector("[class*=captcha-solver-info]")
         }catch(e){null}
         if (element && element.innerText != oldvalue){
-            console.log(element.innerText,oldvalue)
+            try{document.querySelector("._info").remove()}catch(e){}
+            document.title = element.innerText
             let main = document.querySelector(".captcha-solver")
             let addnew = document.createElement("p")
-            addnew.setAttribute('class', 'title')
+            addnew.setAttribute('class', '_info')
             addnew.innerText =element.innerText
             oldvalue = element.innerText
             main.parentNode.insertBefore(addnew, main.nextSibling);
         }else if(/ERROR_+|IP_BANNED|Captcha+Solved/ig.test(element.innerText)){
             clearInterval(check)
         }
-    },2000)
+    },1000)
     })();
