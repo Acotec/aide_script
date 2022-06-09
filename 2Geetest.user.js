@@ -92,7 +92,7 @@
                         timer(10,result)
                     }else if(/ERROR_+/ig.test(result)){
                         document.querySelector(gtipS).innerText=result
-                         return
+                        return
                     }else{
                         document.getElementById("lot_number").value = result.lot_number;
                         document.getElementById("captcha_output").value = result.captcha_output;
@@ -154,7 +154,8 @@
             oldvalue = element.innerText
             main.parentNode.insertBefore(addnew, main.nextSibling);
         }else if(element&&/ERROR_+|IP_BANNED|Captcha+Solved/ig.test(element.innerText)){
+            document.title = element.innerText
             clearInterval(check)
         }else{}
-    },1000)
+    },500)
     })();
