@@ -52,18 +52,19 @@
             onload: r => {
                 let result = r.responseText
                 console.log(result);
-                if(/ERROR_WRONG_USER_KEY|ERROR_KEY_DOES_NOT_EXIST|ERROR_ZERO_BALANCE/ig.test(result)){
-                    try{document.querySelector(gtipS).innerText=result}catch(e){alert(result)}
-                    return
-                }
+                document.querySelector(gtipS).innerText=result
                 if(/ERROR_NO_SLOT_AVAILABLE/ig.test(result)){
                     try{document.querySelector(gtipS).innerText=result+" Retrying after 10sec or (Click to solve) Button"}catch(e){alert(result)}
                     setTimeout(submit,1000)
                     return
                 }
+                else if(/ERROR_+/ig.test(result)){
+                    try{document.querySelector(gtipS).innerText=result}catch(e){alert(result)}
+                    return
+                }
                 else{
                     GM_setValue("id",parseInt(result.replace(/ok\|/ig,'')))
-                    timer(10)
+                    timer(10,result)
                 }
             },
             onerror:r =>{console.log(r.response);document.querySelector(gtipS).innerText='Something is Wrong';}
@@ -80,33 +81,43 @@
             url: res_api,
             data: new URLSearchParams({key,action,id,json}).toString(),
             onload: r => {
-                var answer = JSON.parse(r.response)
-                GM_setValue('answer',JSON.stringify(answer));
-                console.log(answer.request);
-                var result = answer.request
-                if(/CAPCHA_NOT_READY/ig.test(result)){
-                    document.querySelector(gtipS).innerText=result
-                    timer(10)
-                }
-                else{
-                    document.getElementById("lot_number").value = result.lot_number;
-                    document.getElementById("captcha_output").value = result.captcha_output;
-                    document.getElementById("pass_token").value = result.pass_token;
-                    document.getElementById("gen_time").value = result.gen_time;
-                    document.querySelector(gtipS).innerText='DONE SOLVING CAPTCHA';
-                    addButton.innerText ="Captcha Solved"
-                    return
+                //console.log(r.response)
+                try{
+                    var answer = JSON.parse(r.response)
+                    GM_setValue('answer',JSON.stringify(answer));
+                    console.log(answer.request);
+                    var result = answer.request
+                    if(/CAPCHA_NOT_READY/ig.test(result)){
+                        document.querySelector(gtipS).innerText=result
+                        timer(10,result)
+                    }else if(/ERROR_+/ig.test(result)){
+                        document.querySelector(gtipS).innerText=result
+                         return
+                    }else{
+                        document.getElementById("lot_number").value = result.lot_number;
+                        document.getElementById("captcha_output").value = result.captcha_output;
+                        document.getElementById("pass_token").value = result.pass_token;
+                        document.getElementById("gen_time").value = result.gen_time;
+                        document.querySelector(gtipS).innerText='DONE SOLVING CAPTCHA';
+                        addButton.innerText ="Captcha Solved"
+                        return
+                    }
+                }catch(e){
+                    console.log(e)
+                    //console.log(r.response)
+                    document.querySelector(gtipS).innerText='CAPTCHA_SOLVED_BUT_CANT_BYPASS'
                 }
             },
             onerror:r =>{console.log(r.response);document.querySelector(gtipS).innerText='Something is Wrong';}
         });}
-    var timer = (x,callback) => {
+    var timer = (x,res="Waiting for "+ x +"-seconds for captcha to be solved") => {
         if (x < 0) {
             getRes()
             return
         };
         document.title = x + '--' +title;
-        try{document.querySelector(gtipS).innerText="Waiting for "+ x +"-seconds for captcha to be solved"}
+        try{document.querySelector(gtipS).innerText=res//"Waiting for "+ x +"-seconds for captcha to be solved"
+           }
         catch(err){}
         return setTimeout(() => {
             timer(--x)
@@ -142,8 +153,8 @@
             addnew.innerText =element.innerText
             oldvalue = element.innerText
             main.parentNode.insertBefore(addnew, main.nextSibling);
-        }else if(/ERROR_+|IP_BANNED|Captcha+Solved/ig.test(element.innerText)){
+        }else if(element&&/ERROR_+|IP_BANNED|Captcha+Solved/ig.test(element.innerText)){
             clearInterval(check)
-        }
+        }else{}
     },1000)
     })();
